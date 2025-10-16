@@ -76,5 +76,71 @@ const uploadCsv = async (req, res) => {
   });
 }
 
+function listProducts(req, res) {
+  const {
+    page = 1,
+    limit = 10,
+    brand,
+    color,
+    minPrice,
+    maxPrice,
+    sku,
+    name,
+  } = req.query;
+
+  const offset = (page - 1) * limit;
+
+  const conditions = [];
+  const params = {};
+
+  if (brand) {
+    conditions.push("brand = @brand");
+    params.brand = brand;
+  }
+  if (color) {
+    conditions.push("color = @color");
+    params.color = color;
+  }
+  if (minPrice) {
+    conditions.push("price >= @minPrice");
+    params.minPrice = Number(minPrice);
+  }
+  if (maxPrice) {
+    conditions.push("price <= @maxPrice");
+    params.maxPrice = Number(maxPrice);
+  }
+  if (sku) {
+    conditions.push("sku = @sku");
+    params.sku = sku;
+  }
+  if (name) {
+    conditions.push("name LIKE @name");
+    params.name = `%${name}%`;
+  }
+
+  let whereClause = "";
+  if (conditions.length > 0) {
+    whereClause = "WHERE " + conditions.join(" AND ");
+  }
+
+  const dataStmt = db.prepare(`
+    SELECT * FROM products
+    ${whereClause}
+    ORDER BY id DESC
+    LIMIT @limit OFFSET @offset
+  `);
+  params.limit = Number(limit);
+  params.offset = Number(offset);
+
+  const rows = dataStmt.all(params);
+
+  res.json({
+    page: Number(page),
+    limit: Number(limit),
+    data: rows,
+  });
+}
+
 module.exports = { uploadCsv, 
+    listProducts
 };

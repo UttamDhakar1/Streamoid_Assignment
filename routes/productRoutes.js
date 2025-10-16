@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
-const { uploadCsv } = require("../controllers/productController");
+const { uploadCsv, listProducts } = require("../controllers/productController");
 
 
 const upload = multer({
@@ -20,6 +20,6 @@ const upload = multer({
 });
 
 router.post("/upload", upload.single("file"), (req, res)=>uploadCsv(req,res));
-
+router.get("/", listProducts);
 
 module.exports = router;
