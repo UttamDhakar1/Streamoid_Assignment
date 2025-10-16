@@ -1,16 +1,22 @@
+// db.js
+const Database = require("better-sqlite3");
+const path = require("path");
 
-const express = require("express");
-const cors = require("cors");
-const productRoutes = require("./routes/productRoutes");
+const db = new Database(path.join(__dirname, "products.db"));
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+// Create products table if not exists
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sku TEXT UNIQUE,
+    name TEXT,
+    brand TEXT,
+    color TEXT,
+    size TEXT,
+    mrp REAL,
+    price REAL,
+    quantity INTEGER
+  )
+`).run();
 
-app.use(cors());
-app.use(express.json());
-
-app.use("/products", productRoutes);
-
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
-});
+module.exports = db;
